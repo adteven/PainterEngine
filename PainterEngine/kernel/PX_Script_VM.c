@@ -28,7 +28,6 @@ px_bool PX_ScriptVM_InstanceInit(PX_ScriptVM_Instance *Ins,px_memorypool *mp,px_
 	px_int i,j;
 	if (size<sizeof(PX_SCRIPT_ASM_HEADER))
 	{
-		PX_SCRIPT_VM_LOG("Invalid Size:%d\n",size);
 		return PX_FALSE;
 	}
 
@@ -50,13 +49,11 @@ px_bool PX_ScriptVM_InstanceInit(PX_ScriptVM_Instance *Ins,px_memorypool *mp,px_
 
 	if (!PX_memequ(header,"PASM",4))
 	{
-		PX_SCRIPT_VM_LOG("Invalid Header");
 		return PX_FALSE;
 	}
 
 	if (PX_crc32(code+8,size-8)!=header->CRC)
 	{
-		PX_SCRIPT_VM_LOG("CRC Error!");
 		return PX_FALSE;
 	}
 
@@ -116,7 +113,6 @@ px_bool PX_ScriptVM_InstanceInit(PX_ScriptVM_Instance *Ins,px_memorypool *mp,px_
 	{
 		if ((Ins->_host=(PX_SCRIPT_ASM_HOST_NODE *)MP_Malloc(mp,sizeof(PX_SCRIPT_ASM_HOST_NODE)*Ins->hostCount))==PX_NULL)
 		{
-			PX_SCRIPT_VM_LOG("Out of Memory");
 			return PX_FALSE;
 		}
 		PX_memset(Ins->_host,0,sizeof(PX_SCRIPT_ASM_HOST_NODE)*Ins->hostCount);
@@ -2384,7 +2380,7 @@ PX_SCRIPTVM_RUNRETURN PX_ScriptVM_InstanceRunThread(PX_ScriptVM_Instance *Ins,px
 				{
 					if (!((PX_ScriptVM_Function_Modules)(Ins->_host[cVar._int].map))(Ins))
 					{
-						PX_SCRIPT_VM_LOG("Function error!");
+
 					}
 				}
 				pT->IP+=8;
@@ -4404,7 +4400,6 @@ px_void PX_ScriptVM_DebuggerInterrupt(PX_ScriptVM_Instance *Ins)
 	g_scriptVM_printFunc("\n");
 	do 
 	{
-		PX_SCRIPT_VM_LOG("debug:>");
 		g_scriptVM_cmdFunc(cmd,PX_SCRIPTVM_DEBUGGER_CMD_LEN);
 		PX_strupr(cmd);
 	} while (!PX_ScriptVM_DebuggerSolveCmd(Ins,cmd));

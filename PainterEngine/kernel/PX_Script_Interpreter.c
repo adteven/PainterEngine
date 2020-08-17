@@ -783,6 +783,8 @@ static px_bool PX_ScriptParse_AST_PushToken(PX_SCRIPT_Analysis *analysis,px_vect
 							return PX_TRUE;
 						}
 						break;
+					default:
+						break;
 				}
 
 			}
@@ -947,6 +949,8 @@ static px_bool PX_ScriptParse_AST_PushToken(PX_SCRIPT_Analysis *analysis,px_vect
 				PX_VectorPushback(tk,&operand);
 			}
 			break;
+			default:
+				return PX_FALSE;
 		}
 		
 		return PX_TRUE;
@@ -6036,6 +6040,8 @@ static px_bool PX_ScriptParseExpressionStream(PX_SCRIPT_Analysis *analysis,px_ve
 							goto _EXPR_OUT;
 						}
 						break;
+						default:
+							goto _ERROR;
 					}
 					(*offset)++;
 				}
@@ -9008,6 +9014,8 @@ px_bool PX_ScriptParseLastBlockEnd(PX_SCRIPT_Analysis *analysis)
 			}
 		}
 		break;
+		default:
+			return PX_FALSE;
 	}
 	return PX_TRUE;
 }
@@ -9238,6 +9246,8 @@ px_bool PX_ScriptParseIfLastAST(PX_SCRIPT_Analysis *analysis)
 				}
 			}
 			break;
+			default:
+				return PX_FALSE;
 		}
 	}
 	else
@@ -10329,6 +10339,8 @@ _CONTINUE:
 						goto _BREAKOUT;
 					}
 				    break;
+					default:
+						goto _ERROR;
 				}
 			}
 			_BREAKOUT:
@@ -10377,6 +10389,8 @@ _CONTINUE:
 						goto _CONTINUEOUT;
 					}
 					break;
+					default:
+						goto _ERROR;
 				}
 			}
 _CONTINUEOUT:
@@ -10451,7 +10465,7 @@ _CONTINUEOUT:
 					PX_ScriptTranslatorError(&analysis.lexer,"Return-type not matched.");
 						goto _ERROR;
 				}
-				if (retOperand.operandType==PX_SCRIPT_AST_OPERAND_TYPE_INT||PX_SCRIPT_AST_OPERAND_TYPE_INT_CONST)
+				if (retOperand.operandType==PX_SCRIPT_AST_OPERAND_TYPE_INT||retOperand.operandType==PX_SCRIPT_AST_OPERAND_TYPE_INT_CONST)
 				{
 					PX_StringCat(&analysis.code,"FLT R1\n");
 				}
@@ -10510,6 +10524,8 @@ _CONTINUEOUT:
 						goto _ERROR;
 				}
 				break;
+				default:
+					goto _ERROR;
 			}
 
 			if (!PX_ScriptParseFunctionReturn(&analysis))

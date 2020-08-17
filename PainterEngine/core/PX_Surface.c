@@ -24,6 +24,12 @@ px_void PX_SurfaceFree(px_surface *psurface)
 	psurface->width=0;
 }
 
+
+px_int PX_SurfaceMemorySize(px_uint width,px_uint height)
+{
+	return width*height*sizeof(px_color);
+}
+
 px_void PX_SurfaceDrawPixel(px_surface *psurface,px_int X,px_int Y,px_color COLOR)
 {
 	px_color c;

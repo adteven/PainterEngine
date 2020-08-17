@@ -47,11 +47,11 @@ typedef struct
 	px_void *function_yes_ptr,*function_no_ptr;
 	const px_char *Message;
 	PX_FontModule *fontmodule;
-	PX_Object *root,*btn_Ok,*btn_Cancel;
+	PX_Object *root,*btn_Ok,*btn_Cancel,*edit_inputbox;
 }PX_MessageBox;
 
 
-px_bool PX_MessageBoxInitialize(PX_Runtime *runtime,PX_MessageBox *pm,PX_FontModule *fontmodule,px_int window_Width,px_int window_Height);
+px_bool PX_MessageBoxInitialize(PX_Runtime *runtime,PX_MessageBox *pm,PX_FontModule *fontmodule);
 px_void PX_MessageBoxPostEvent(PX_MessageBox *pm,PX_Object_Event e);
 px_void PX_MessageBoxUpdate(PX_MessageBox *pm,px_dword elpased);
 px_void PX_MessageBoxClose(PX_MessageBox *pm);
@@ -61,6 +61,9 @@ px_void PX_MessageBoxAlertOkEx(PX_MessageBox *pm,const px_char *message,PX_Messa
 px_void PX_MessageBoxAlert(PX_MessageBox *pm,const px_char *message);
 px_void PX_MessageBoxAlertYesNo(PX_MessageBox *pm,const char *Message);
 px_void PX_MessageBoxAlertYesNoEx(PX_MessageBox *pm,const char *Message,PX_MessageBoxCallBack func_yescallback,px_void *yesptr,PX_MessageBoxCallBack func_nocallback,px_void *noptr);
+px_void PX_MessageBoxInputBox(PX_MessageBox *pm,const char *Message,PX_MessageBoxCallBack func_yescallback,px_void *yesptr,PX_MessageBoxCallBack func_cancelcallback,px_void *cancelptr);
+px_char *PX_MessageBoxGetInput(PX_MessageBox *pm);
+
 px_void PX_MessageBoxSetColorModule(PX_MessageBox *pm,PX_MESSAGEBOX_COLORMOD colormod);
 px_void PX_MessageBoxSetFontModule(PX_MessageBox *pm,PX_FontModule *fm);
 PX_MESSAGEBOX_RETURN SS_MessageBoxGetLastReturn(PX_MessageBox *pm);

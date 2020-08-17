@@ -66,7 +66,7 @@ px_void PX_ConsoleUpdateEx(PX_Console *pc)
 PX_Object * PX_ConsolePrintText(PX_Console *pc,const px_char *text)
 {
 	PX_ConsoleColumn obj;
-	PX_Object *pObject=PX_Object_AutoTextCreate(&pc->runtime->mp_ui,PX_Object_ScrollAreaGetIncludedObjects(pc->Area),0,0,pc->runtime->width-1,PX_NULL);
+	PX_Object *pObject=PX_Object_AutoTextCreate(&pc->runtime->mp_ui,PX_Object_ScrollAreaGetIncludedObjects(pc->Area),0,0,pc->runtime->surface_width-1,PX_NULL);
 
 	if (pObject)
 	{
@@ -87,7 +87,7 @@ PX_Object * PX_ConsolePrintImage(PX_Console *pc,px_char *res_image_key)
 	PX_ConsoleColumn obj;
 	PX_Resource *pimageRes;
 	PX_Object *pObject;
-	if(pimageRes=PX_ResourceLibraryGet(&pc->runtime->ResourceLibrary,res_image_key))
+	if((pimageRes=PX_ResourceLibraryGet(&pc->runtime->ResourceLibrary,res_image_key))!=PX_NULL)
 	{
 		if (pimageRes->Type==PX_RESOURCE_TYPE_TEXTURE)
 		{
@@ -119,7 +119,7 @@ PX_Object * PX_ConsolePrintAnimation(PX_Console *pc,px_char *res_animation_key)
 	PX_Resource *pAnimationRes;
 	PX_Object *pObject;
 	px_rect rect;
-	if(pAnimationRes=PX_ResourceLibraryGet(&pc->runtime->ResourceLibrary,res_animation_key))
+	if((pAnimationRes=PX_ResourceLibraryGet(&pc->runtime->ResourceLibrary,res_animation_key))!=PX_NULL)
 	{
 		if (pAnimationRes->Type==PX_RESOURCE_TYPE_ANIMATIONLIBRARY)
 		{
@@ -152,7 +152,7 @@ PX_Object * PX_ConsoleShowImage(PX_Console *pc,px_char *res_image_key)
 	PX_ConsoleColumn obj;
 	PX_Resource *pimageRes;
 	PX_Object *pObject;
-	if(pimageRes=PX_ResourceLibraryGet(&pc->runtime->ResourceLibrary,res_image_key))
+	if((pimageRes=PX_ResourceLibraryGet(&pc->runtime->ResourceLibrary,res_image_key))!=PX_NULL)
 	{
 		if (pimageRes->Type==PX_RESOURCE_TYPE_TEXTURE)
 		{
@@ -207,7 +207,7 @@ px_void  PC_ConsoleSetImageMask(PX_Console *pc,px_int id,px_char *mask_key)
 			if (pCc->Object->Type==PX_OBJECT_TYPE_IMAGE)
 			{
 				PX_Resource *pimageRes;
-				if(pimageRes=PX_ResourceLibraryGet(&pc->runtime->ResourceLibrary,mask_key))
+				if((pimageRes=PX_ResourceLibraryGet(&pc->runtime->ResourceLibrary,mask_key))!=PX_NULL)
 				{
 					if (pimageRes->Type==PX_RESOURCE_TYPE_TEXTURE)
 					{
@@ -321,7 +321,7 @@ px_bool PC_ConsoleVM_Close(PX_ScriptVM_Instance *Ins)
 px_void  PC_ConsoleRunScriptFunction(PX_Console *pc,px_char *script_key,px_char *func_name)
 {
 	PX_Resource *pScriptRes;
-	if(pScriptRes=PX_ResourceLibraryGet(&pc->runtime->ResourceLibrary,script_key))
+	if((pScriptRes=PX_ResourceLibraryGet(&pc->runtime->ResourceLibrary,script_key))!=PX_NULL)
 	{
 		if (pScriptRes->Type==PX_RESOURCE_TYPE_SCRIPT)
 		{
@@ -473,7 +473,7 @@ px_void PX_ConsoleOnEnter(PX_Object *Obj,PX_Object_Event e,px_void *user_ptr)
 
 	if (e.Event==PX_OBJECT_EVENT_KEYDOWN)
 	{
-		if (e.Param_uint[0]=='\r')
+		if (PX_Object_Event_GetKeyDown(e)=='\r')
 		{
 			if(!PX_ConsoleExecute(pc,pEdit->text.buffer))
 			{
@@ -506,14 +506,14 @@ px_bool PC_ConsoleInit(PX_Console *pc)
 	pc->max_column=PC_CONSOLE_DEFAULT_MAX_COLUMN;
 	pc->column=0;
 	if(!(pc->Root=PX_ObjectCreate(&pc->runtime->mp_ui,0,0,0,0,0,0,0))) return PX_FALSE;
-	if(!(pc->Area=PX_Object_ScrollAreaCreate(&pc->runtime->mp_ui,pc->Root,0,0,pc->runtime->width,pc->runtime->height))) return PX_FALSE;
+	if(!(pc->Area=PX_Object_ScrollAreaCreate(&pc->runtime->mp_ui,pc->Root,0,0,pc->runtime->surface_width,pc->runtime->surface_height))) return PX_FALSE;
 
 
 	pc->Area->User_ptr=pc;
 	PX_ObjectRegisterEvent(pc->Area,PX_OBJECT_EVENT_KEYDOWN,PX_ConsoleOnEnter,PX_NULL);
 	PX_ObjectRegisterEvent(pc->Area,PX_OBJECT_EVENT_CURSORDOWN,PX_ConsoleOnMouseDown,PX_NULL);
 	PX_Object_ScrollAreaSetBorder(pc->Area,PX_FALSE);
-	if(!(pc->Input=PX_Object_EditCreate(&pc->runtime->mp_ui,PX_Object_ScrollAreaGetIncludedObjects(pc->Area),0,0,pc->runtime->width-1,PX_FontGetCharactorHeight()+4,PX_NULL,PX_COLOR(255,0,255,0)))) return PX_FALSE;
+	if(!(pc->Input=PX_Object_EditCreate(&pc->runtime->mp_ui,PX_Object_ScrollAreaGetIncludedObjects(pc->Area),0,0,pc->runtime->surface_width-1,PX_FontGetCharactorHeight()+4,PX_NULL,PX_COLOR(255,0,255,0)))) return PX_FALSE;
 	PX_Object_EditSetCursorColor(pc->Input,PX_COLOR(255,0,255,0));
 	PX_Object_EditSetTextColor(pc->Input,PX_COLOR(255,0,255,0));
 	PX_Object_EditSetBorderColor(pc->Input,PX_COLOR(255,0,255,0));
@@ -551,7 +551,7 @@ px_void PX_ConsolePostEvent(PX_Console *pc,PX_Object_Event e)
 	{
 		if (e.Event==PX_OBJECT_EVENT_KEYDOWN)
 		{
-			if (e.Param_uint[0]==36)
+			if (PX_Object_Event_GetKeyDown(e)==36)
 			{
 				PX_ConsoleShow(pc,PX_FALSE);
 				return;
@@ -567,7 +567,7 @@ px_void PX_ConsolePostEvent(PX_Console *pc,PX_Object_Event e)
 	{
 		if (e.Event==PX_OBJECT_EVENT_KEYDOWN)
 		{
-			if (e.Param_uint[0]==36)
+			if (PX_Object_Event_GetKeyDown(e)==36)
 			{
 				PX_ConsoleShow(pc,PX_TRUE);
 			}

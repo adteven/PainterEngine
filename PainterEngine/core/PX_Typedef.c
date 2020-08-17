@@ -15,7 +15,7 @@ px_uint PX_htoi(const px_char hex_str[])
 {  
 	px_char ch;   
 	px_uint iret=0;  
-	while(ch=*hex_str++)   
+	while((ch=*hex_str++)!=0)
 	{   
 		iret=(iret<<4)|px_hex_to_dex_table[ch];  
 	}   
@@ -456,6 +456,47 @@ px_float PX_Point_cos(px_point v)
 	return v.x/PX_sqrt(v.x*v.x+v.y*v.y);
 }
 
+px_void PX_BufferToHexString(px_byte data[],px_int size,px_char hex_str[])
+{
+	px_int i;
+	for (i=0;i<size;i++)
+	{
+		if (data[i]==0)
+		{
+			PX_strcat(hex_str+i*2,"00");
+		}
+		else if (data[i]<0x10)
+		{
+			*(hex_str+i*2)='0';
+			PX_itoa(data[i],hex_str+i*2+1,3,16);
+		}
+		else
+		PX_itoa(data[i],hex_str+i*2,3,16);
+	}
+	hex_str[i*2]=0;
+}
+
+px_bool PX_HexStringToBuffer(const px_char hex_str[],px_byte data[])
+{
+	px_int i=0;
+	px_char hex[3]={0};
+	if (PX_strlen(hex_str)&1)
+	{
+		return PX_FALSE;
+	}
+	while (*hex_str)
+	{
+		hex[0]=*hex_str;
+		hex_str++;
+		hex[1]=*hex_str;
+		hex_str++;
+
+		data[i]=PX_htoi(hex);
+		i++;
+	}
+	return PX_TRUE;
+}
+
 static volatile const px_double Tiny =(px_double)2.225073858507201383e-308 ;
 
 static px_double Tail(px_double x)
@@ -847,7 +888,7 @@ px_int PX_sprintf8(px_char *_out_str,px_int str_size,const px_char fmt[], px_str
 				continue;
 			}
 
-			if (*(p+2)=='.')
+			if (*(p+2)=='.'&&PX_charIsNumeric(*(p+3)))
 			{
 				precision=*(p+3)-'0';
 				p+=3;
@@ -899,7 +940,7 @@ px_int PX_sprintf8(px_char *_out_str,px_int str_size,const px_char fmt[], px_str
 			continue;
 		}
 
-		if (*(p+2)=='.')
+		if (*(p+2)=='.'&&PX_charIsNumeric(*(p+3)))
 		{
 			precision=*(p+3)-'0';
 			p+=3;
@@ -3427,80 +3468,6 @@ px_uint32 PX_sum32(px_void *buffer, px_uint size)
 }
 
 
-//%s %d %f
-// px_bool px_sprintf(px_char *str,px_int str_size,px_char fmt[],...)
-// {
-// 	_px_va_list ap;
-// 	px_char *p, *sval;
-// 	px_int ival,oft=0;
-// 	px_int finalLen=0;
-// 	px_double dval;
-// 	px_char dat[32];
-// 	px_uchar shl=0;
-// 
-// 	_px_va_start(ap, fmt);
-// 	for (p = fmt; *p; p++) {
-// 		if(*p != '%') {
-// 			finalLen++;
-// 			continue;
-// 		}
-// 		switch(*++p) {
-// 		case 'd':
-// 			ival = _px_va_arg(ap, px_int);
-// 			finalLen +=PX_itoa(ival,dat,sizeof dat,10);
-// 			break;
-// 		case 'f':
-// 			dval = _px_va_arg(ap, px_double);
-// 			finalLen +=PX_ftoa((px_float)dval,dat,sizeof dat,6);
-// 			break;
-// 		case 's':
-// 			sval = _px_va_arg(ap, char *); 
-// 			finalLen +=PX_strcpy(sval);
-// 			break;
-// 		default:
-// 			finalLen+=1;
-// 			break;
-// 		}
-// 	}
-// 	_px_va_end(ap);
-// 	finalLen++;
-// 	if (str_size<finalLen)
-// 	{
-// 		return PX_FALSE;
-// 	}
-// 
-// 	px_memset(str,0,str_size);
-// 	_px_va_start(ap, fmt);
-// 	for (p = fmt; *p; p++) {
-// 		if(*p != '%') {
-// 			str[oft++]=*p;
-// 			continue;
-// 		}
-// 		switch(*++p) {
-// 		case 'd':
-// 			ival = _px_va_arg(ap, px_int);
-// 			oft+=PX_itoa(ival,dat,sizeof dat,10);
-// 			PX_strcat(str,dat);
-// 			break;
-// 		case 'f':
-// 			dval = _px_va_arg(ap, px_double);
-// 			oft+=PX_ftoa((px_float)dval,dat,sizeof dat,6);
-// 			PX_strcat(str,dat);
-// 			break;
-// 		case 's':
-// 			sval = _px_va_arg(ap, char *); 
-// 			oft+=PX_strcpy(sval);
-// 			PX_strcat(str,sval);
-// 			break;
-// 		default:
-// 			str[oft++]=*p;
-// 			break;
-// 		}
-// 	}
-// 	_px_va_end(ap);
-// 	str[oft]='\0';
-// 	return oft;
-// }
 
 px_point PX_PointRotate(px_point p,px_float angle)
 {

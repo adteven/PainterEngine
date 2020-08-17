@@ -86,6 +86,7 @@ px_void PX_WorldUpdate( PX_World *world,px_uint elpased )
 {
 	px_int updateCount;
 	px_int i,b,j,k;
+	px_float w_left=0,w_top=0,w_right=0,w_height=0;
 	PX_Object_Event e;
 	PX_WorldObject *pwo;
 	
@@ -157,7 +158,16 @@ NEW_OBJECT_CONTINUE:
 
 
 	for (i=0;i<sizeof(pwo->pObject->impact_Object_type)*8;i++)
-		PX_QuadtreeCreate(calcmp,&world->Impact_Test_array[i],0,0,(px_float)world->world_width,(px_float)world->world_height,impact_count[i],2);
+	{
+		if (impact_count[i])
+		{
+			PX_QuadtreeCreate(calcmp,&world->Impact_Test_array[i],0,0,(px_float)world->world_width,(px_float)world->world_height,impact_count[i],2);
+		}
+		else
+		{
+			PX_QuadtreeCreate(calcmp,&world->Impact_Test_array[i],0,0,(px_float)world->world_width,(px_float)world->world_height,impact_count[i],0);
+		}
+	}
 
 	for (i=0;i<updateCount;i++)
 	{

@@ -531,7 +531,7 @@ px_int PX_FontModuleGetCharacterDesc(PX_FontModule *module,const px_char *Text,p
 
 	if (*code==' ')
 	{
-		*advance=module->max_Width;
+		*advance=module->max_Width/2;
 		*height=module->max_Height;
 		return f_size;
 	}
@@ -575,7 +575,7 @@ px_void PX_FontModuleTextGetRenderWidthHeight(PX_FontModule *module,const px_cha
 
 		if (code==' ')
 		{
-			dx+=module->max_Width;
+			dx+=module->max_Width/2;
 		}
 		else if(code=='\n')
 		{
@@ -690,7 +690,7 @@ px_void PX_FontModuleDrawText(px_surface *psurface,PX_FontModule *mod,int x,int 
 
 		if (code==' ')
 		{
-			dx+=mod->max_Width;
+			dx+=mod->max_Width/2;
 		}
 		else if(code=='\n')
 		{

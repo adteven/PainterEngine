@@ -24,24 +24,44 @@ px_void PX_MessageBox_BtnNoClick(PX_Object *pObject,PX_Object_Event e,px_void *u
 	}
 }
 
+px_void PX_MessageBox_EditOnEnter(PX_Object *pObject,PX_Object_Event e,px_void *user)
+{
+	if (e.Event==PX_OBJECT_EVENT_KEYDOWN)
+	{
+		if (PX_Object_Event_GetKeyDown(e)=='\r')
+		{
+			PX_MessageBox *pm=(PX_MessageBox *)user;
+			pm->retVal=PX_MESSAGEBOX_RETURN_YES;
+			pm->mode=PX_MESSAGEBOX_MODE_CLOSE;
+			if (pm->function_yes)
+			{
+				pm->function_yes(pm->function_yes_ptr);
+			}
+			return;
+		}
+	}
+}
 
-px_bool PX_MessageBoxInitialize(PX_Runtime *runtime,PX_MessageBox *pm,PX_FontModule *fontmodule,px_int window_Width,px_int window_Height)
+px_bool PX_MessageBoxInitialize(PX_Runtime *runtime,PX_MessageBox *pm,PX_FontModule *fontmodule)
 {
 
 	pm->schedule=0;
 	pm->runtime=runtime;
-	pm->window_Width=window_Width;
-	pm->window_Height=window_Height;
+	pm->window_Width=runtime->surface_width;
+	pm->window_Height=runtime->surface_height;
 	pm->retVal=PX_MESSAGEBOX_RETURN_NONE;
 	pm->function_no=PX_NULL;
 	pm->function_yes=PX_NULL;
 
 	if(!(pm->root=PX_ObjectCreate(&runtime->mp_ui,PX_NULL,0,0,0,0,0,0))) return PX_FALSE;
 	
-	if(!(pm->btn_Ok=PX_Object_PushButtonCreate(&runtime->mp_ui,pm->root,window_Width/2+200,window_Height/2+150,84,28,"OK",PX_NULL,PX_COLOR(255,0,0,0)))) return PX_FALSE;
+	if(!(pm->btn_Ok=PX_Object_PushButtonCreate(&runtime->mp_ui,pm->root,pm->window_Width/2+200,pm->window_Height/2+150,84,28,"OK",PX_NULL,PX_COLOR(255,0,0,0)))) return PX_FALSE;
 	
-	if(!(pm->btn_Cancel=PX_Object_PushButtonCreate(&runtime->mp_ui,pm->root,window_Width/2+300,window_Height/2+150,84,28,"Cancel",PX_NULL,PX_COLOR(255,0,0,0)))) return PX_FALSE;
+	if(!(pm->btn_Cancel=PX_Object_PushButtonCreate(&runtime->mp_ui,pm->root,pm->window_Width/2+300,pm->window_Height/2+150,84,28,"Cancel",PX_NULL,PX_COLOR(255,0,0,0)))) return PX_FALSE;
 	
+	if(!(pm->edit_inputbox=PX_Object_EditCreate(&runtime->mp_ui,pm->root,pm->window_Width/2-100,pm->window_Height/2-12,256,32,fontmodule,PX_COLOR(255,0,0,0)))) return PX_FALSE;
+	PX_ObjectSetVisible(pm->edit_inputbox,PX_FALSE);
+
 
 	pm->Message=PX_NULL;
 	pm->show=PX_FALSE;
@@ -50,6 +70,7 @@ px_bool PX_MessageBoxInitialize(PX_Runtime *runtime,PX_MessageBox *pm,PX_FontMod
 	pm->PX_MESSAGEBOX_STAGE_1_HEIGHT=PX_MESSAGEBOX_DEFAULT_STAGE_1_HEIGHT;
 	pm->PX_MESSAGEBOX_STAGE_2_HEIGHT=PX_MESSAGEBOX_DEFAULT_STAGE_2_HEIGHT;
 
+	PX_ObjectRegisterEvent(pm->edit_inputbox,PX_OBJECT_EVENT_KEYDOWN,PX_MessageBox_EditOnEnter,pm);
 	PX_ObjectRegisterEvent(pm->btn_Ok,PX_OBJECT_EVENT_EXECUTE,PX_MessageBox_BtnYesClick,pm);
 	PX_ObjectRegisterEvent(pm->btn_Cancel,PX_OBJECT_EVENT_EXECUTE,PX_MessageBox_BtnNoClick,pm);
 	return PX_TRUE;
@@ -71,6 +92,19 @@ px_void PX_MessageBoxUpdate(PX_MessageBox *pm,px_dword elpased)
 	}
 	if (pm->show)
 	{
+
+		pm->window_Width=pm->runtime->surface_width;
+		pm->window_Height=pm->runtime->surface_height;
+
+		pm->btn_Ok->x=pm->window_Width/2+200.0f;
+		pm->btn_Ok->y=pm->window_Height/2+150.0f;
+
+		pm->btn_Cancel->x=pm->window_Width/2+300.0f;
+		pm->btn_Cancel->y=pm->window_Height/2+150.0f;
+
+		pm->edit_inputbox->x=pm->window_Width/2-100.0f;
+		pm->edit_inputbox->y=pm->window_Height/2-12.0f;
+
 		PX_ObjectUpdate(pm->root,elpased);
 		switch(pm->mode)
 		{
@@ -152,14 +186,32 @@ px_void PX_MessageBoxRender(px_surface *pSurface,PX_MessageBox *pm,px_dword elpa
 		PX_GeoDrawRect(pSurface,0,(pm->window_Height-pm->PX_MESSAGEBOX_STAGE_2_HEIGHT)/2-30,pm->window_Width-1,(pm->window_Height-pm->PX_MESSAGEBOX_STAGE_2_HEIGHT)/2-10,backGroundColor);
 		PX_GeoDrawRect(pSurface,0,(pm->window_Height+pm->PX_MESSAGEBOX_STAGE_2_HEIGHT)/2+10,pm->window_Width-1,(pm->window_Height+pm->PX_MESSAGEBOX_STAGE_2_HEIGHT)/2+30,backGroundColor);
 
-		if (pm->fontmodule)
+		if (pm->edit_inputbox->Visible)
 		{
-			PX_FontModuleDrawText(pSurface,pm->fontmodule,pm->window_Width/2,pm->window_Height/2,PX_FONT_ALIGN_CENTER,pm->Message,frontColor);
+			//inputbox mode
+			if (pm->fontmodule)
+			{
+				PX_FontModuleDrawText(pSurface,pm->fontmodule,pm->window_Width/2-108,pm->window_Height/2,PX_FONT_ALIGN_RIGHTMID,pm->Message,frontColor);
+			}
+			else
+			{
+				PX_FontDrawText(pSurface,pm->window_Width/2-108,pm->window_Height/2,PX_FONT_ALIGN_RIGHTMID,pm->Message,frontColor);
+			}
 		}
 		else
 		{
-			PX_FontDrawText(pSurface,pm->window_Width/2,pm->window_Height/2,PX_FONT_ALIGN_CENTER,pm->Message,frontColor);
+			if (pm->fontmodule)
+			{
+				PX_FontModuleDrawText(pSurface,pm->fontmodule,pm->window_Width/2,pm->window_Height/2,PX_FONT_ALIGN_CENTER,pm->Message,frontColor);
+			}
+			else
+			{
+				PX_FontDrawText(pSurface,pm->window_Width/2,pm->window_Height/2,PX_FONT_ALIGN_CENTER,pm->Message,frontColor);
+			}
 		}
+
+
+		
 
 		PX_ObjectRender(pSurface,pm->root,elpased);
 	}
@@ -178,6 +230,8 @@ px_void PX_MessageBoxAlertOk(PX_MessageBox *pm,const px_char *message)
 
 	pm->function_yes=PX_NULL;
 	pm->function_no_ptr=PX_NULL;
+
+	pm->edit_inputbox->Visible=PX_FALSE;
 }
 
 px_void PX_MessageBoxAlertOkEx(PX_MessageBox *pm,const px_char *message,PX_MessageBoxCallBack func_callback,px_void *ptr)
@@ -190,7 +244,9 @@ px_void PX_MessageBoxAlertOkEx(PX_MessageBox *pm,const px_char *message,PX_Messa
 	pm->Message=message;
 	pm->mode=PX_MESSAGEBOX_MODE_EXPAND;
 	pm->btn_Cancel->Visible=PX_FALSE;
-	pm->btn_Ok->Visible=PX_TRUE;;
+	pm->btn_Ok->Visible=PX_TRUE;
+
+	pm->edit_inputbox->Visible=PX_FALSE;
 }
 
 px_void PX_MessageBoxAlert(PX_MessageBox *pm,const px_char *message)
@@ -204,6 +260,8 @@ px_void PX_MessageBoxAlert(PX_MessageBox *pm,const px_char *message)
 
 	pm->function_yes=PX_NULL;
 	pm->function_no_ptr=PX_NULL;
+
+	pm->edit_inputbox->Visible=PX_FALSE;
 }
 
 
@@ -218,6 +276,7 @@ px_void PX_MessageBoxAlertYesNo(PX_MessageBox *pm,const char *message)
 	pm->btn_Ok->Visible=PX_TRUE;
 	pm->function_yes=PX_NULL;
 	pm->function_no_ptr=PX_NULL;
+	pm->edit_inputbox->Visible=PX_FALSE;
 }
 
 
@@ -234,6 +293,31 @@ px_void PX_MessageBoxAlertYesNoEx(PX_MessageBox *pm,const char *Message,PX_Messa
 	pm->mode=PX_MESSAGEBOX_MODE_EXPAND;
 	pm->btn_Cancel->Visible=PX_TRUE;
 	pm->btn_Ok->Visible=PX_TRUE;
+	pm->edit_inputbox->Visible=PX_FALSE;
+
+}
+
+px_void PX_MessageBoxInputBox(PX_MessageBox *pm,const char *Message,PX_MessageBoxCallBack func_yescallback,px_void *yesptr,PX_MessageBoxCallBack func_cancelcallback,px_void *cancelptr)
+{
+	pm->function_yes=func_yescallback;
+	pm->function_no=func_cancelcallback;
+	pm->function_yes_ptr=yesptr;
+	pm->function_no_ptr=cancelptr;
+
+	pm->schedule=0;
+	pm->show=PX_TRUE;
+	pm->Message=Message;
+	pm->mode=PX_MESSAGEBOX_MODE_EXPAND;
+	pm->btn_Cancel->Visible=PX_TRUE;
+	pm->btn_Ok->Visible=PX_TRUE;
+	pm->edit_inputbox->Visible=PX_TRUE;
+
+	PX_Object_EditSetText(pm->edit_inputbox,"");
+}
+
+px_char * PX_MessageBoxGetInput(PX_MessageBox *pm)
+{
+	return PX_Object_EditGetText(pm->edit_inputbox);
 }
 
 px_void PX_MessageBoxSetColorModule(PX_MessageBox *pm,PX_MESSAGEBOX_COLORMOD colormod)

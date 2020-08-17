@@ -37,7 +37,7 @@ PX_Json_Value * PX_JsonGetValue(PX_Json *json,const px_char _payload[])
 	px_int s_offset=0;
 	px_char payload[256]={0};
 	px_char *lexeme=PX_NULL;
-	px_int i=0,array=0;
+	px_int i=0,array=-1;
 
 	PX_Json_Value * it=&json->rootValue;
 	if (PX_strlen(_payload)>=sizeof(payload))
@@ -76,11 +76,12 @@ PX_Json_Value * PX_JsonGetValue(PX_Json *json,const px_char _payload[])
 				{
 					lexeme[i]='\0';
 					array=PX_atoi(lexeme+i+1);
+					break;
 				}
 				i--;
 			}
 		}
-		if (array)
+		if (array!=-1)
 		{
 			it=PX_JsonGetObjectValue(it,lexeme);
 			if (it->type==PX_JSON_VALUE_TYPE_ARRAY)
@@ -286,16 +287,54 @@ px_bool PX_JsonInterpret_Value(PX_Json *pjson,px_lexer *lexer,PX_Json_Value *_va
 				_value->type=PX_JSON_VALUE_TYPE_NULL;
 				return PX_TRUE;
 			}
+
+			if (PX_strlen(lexer->CurLexeme.buffer)>=3)
+			{
+				if (lexer->CurLexeme.buffer[0]=='0'&&(lexer->CurLexeme.buffer[1]=='x'||lexer->CurLexeme.buffer[1]=='X'))
+				{
+					_value->type=PX_JSON_VALUE_TYPE_NUMBER;
+					_value->_number=(px_dword)PX_htoi(lexer->CurLexeme.buffer+2);
+					return PX_TRUE;
+				}
+			}
 		}
 		else if(type==PX_LEXER_LEXEME_TYPE_CONATINER&&lexer->CurrentContainerType==json_quotes)
 		{
+			px_int i;
 			_value->type=PX_JSON_VALUE_TYPE_STRING;
 			if(!PX_StringInit(pjson->mp,&_value->_string))goto _ERROR;;
 			PX_LexerGetIncludedString(lexer,&lexer->CurLexeme);
+			
 			if(!PX_StringCopy(&_value->_string,&lexer->CurLexeme))
 			{
 				PX_StringFree(&_value->_string);
 				goto _ERROR;
+			}
+			
+			for (i=0;_value->_string.buffer[i];i++)
+			{
+				if (_value->_string.buffer[i]=='\\')
+				{
+					if (_value->_string.buffer[i+1]=='\\')
+					{
+						PX_StringRemoveChar(&_value->_string,i+1);
+					}
+					if (_value->_string.buffer[i+1]=='n')
+					{
+						_value->_string.buffer[i]='\n';
+						PX_StringRemoveChar(&_value->_string,i+1);
+					}
+					if (_value->_string.buffer[i+1]=='r')
+					{
+						_value->_string.buffer[i]='\r';
+						PX_StringRemoveChar(&_value->_string,i+1);
+					}
+					if (_value->_string.buffer[i+1]=='t')
+					{
+						_value->_string.buffer[i]='\t';
+						PX_StringRemoveChar(&_value->_string,i+1);
+					}
+				}
 			}
 			return PX_TRUE;
 		}
@@ -593,3 +632,4 @@ px_bool PX_JsonCreateArrayValue(px_memorypool *mp,PX_Json_Value *pValue,const px
 	PX_ListInit(mp,&pValue->_Array);
 	return PX_TRUE;
 }
+

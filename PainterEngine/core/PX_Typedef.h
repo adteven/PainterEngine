@@ -57,7 +57,9 @@ typedef		unsigned char		px_uchar;
 typedef		unsigned long		px_ulong;
 typedef		long				px_long;
 typedef     float				px_float;
+typedef     float				px_float32;//IEEE 754 little-endian
 typedef     double				px_double;
+typedef     double				px_double64;
 typedef     unsigned long long  px_qword;
 typedef     unsigned long long  px_uint64;//typedef     uint64_t			px_uint64;
 typedef     long long           px_int64;//typedef      int64_t				px_int64;
@@ -123,6 +125,11 @@ typedef struct _px_wpoint
 	px_double y;
 	px_double z;
 }px_wpoint;
+
+typedef struct 
+{
+	px_float x, y;
+}px_point2D;
 
 typedef px_point px_point3D;
 typedef px_point px_vector3D;
@@ -234,7 +241,8 @@ px_float PX_Point_cos(px_point v);
 
 //////////////////////////////////////////////////////////////////////////
 //string to others
-
+px_void PX_BufferToHexString(px_byte data[],px_int size,px_char hex_str[]);
+px_bool PX_HexStringToBuffer(const px_char hex_str[],px_byte data[]);
 px_uint PX_htoi(const px_char hex_str[]);
 px_int  PX_atoi(const px_char str[]);
 px_float PX_atof(px_char fstr[]);
@@ -422,6 +430,13 @@ px_point PX_PointReflectX(px_point vector_refer,px_point respoint);
 px_point PX_PointMulMatrix(px_point p,px_matrix m);
 px_point4D PX_Point4DMulMatrix(px_point4D p,px_matrix m);
 
+//////////////////////////////////////////////////////////////////////////
+//Triangle
+typedef struct 
+{
+	px_point Vertex_1, Vertex_2, Vertex_3;
+}px_triangle;
+px_bool PX_TriangleIsCross( px_triangle* tri1, px_triangle* tri2 );
 
 //////////////////////////////////////////////////////////////////////////
 //plane

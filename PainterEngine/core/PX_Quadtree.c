@@ -89,6 +89,7 @@ static px_bool PX_Quadtree_InitAABB(px_memorypool *mp,px_int PX_AABB_MAX_DEEP,PX
 
 px_bool PX_QuadtreeCreate(px_memorypool *mp,PX_Quadtree *pQuadtree,px_float mapStartX,px_float mapStartY,px_float mapWidth,px_float mapHeight,px_int ObjectsCount,px_int deep)
 {
+	
 	pQuadtree->mp=mp;
 	pQuadtree->PX_AABB_MAX_DEEP=deep;
 	if(!PX_VectorInit(mp,&pQuadtree->boxes,sizeof(PX_Quadtree_AABB),ObjectsCount))

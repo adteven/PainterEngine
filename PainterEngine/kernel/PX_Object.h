@@ -22,13 +22,13 @@
 #define PX_OBJECT_EVENT_EXECUTE				10
 #define PX_OBJECT_EVENT_CURSORCLICK			11
 #define PX_OBJECT_EVENT_CURSORDRAG			12
-#define PX_OBJECT_EVENT_VALUECHAGE			13
+#define PX_OBJECT_EVENT_VALUECHANGED			13
 #define PX_OBJECT_EVENT_DRAGFILE			14
 #define PX_OBJECT_EVENT_KEYDOWN				15
 #define PX_OBJECT_EVENT_IMPACT				16
 #define PX_OBJECT_EVENT_ONFOCUSCHANGED		17
 #define PX_OBJECT_EVENT_SCALE               18
-
+#define PX_OBJECT_EVENT_WINDOWRESIZE        19
 
 //////////////////////////////////////////////////////////////////////////////
 //    Type of Controls
@@ -51,6 +51,7 @@ enum PX_OBJECT_TYPE
   PX_OBJECT_TYPE_ANIMATION		,
   PX_OBJECT_TYPE_CURSORBUTTON   ,
   PX_OBJECT_TYPE_VKEYBOARD		,
+  PX_OBJECT_TYPE_VNKEYBOARD		,
   PX_OBJECT_TYPE_COORDINATE     ,
   PX_OBJECT_TYPE_FILTEREDITOR   ,
   PX_OBJECT_TYPE_CHECKBOX		,
@@ -83,31 +84,7 @@ enum PX_OBJECT_TYPE
 #define  PX_OBJECT_IMAGE_LISTBOX_STYLE_SELECT		2
 
 
-#define  PX_OBJECT_COORDINATEDATA_MAP_LEFT  0
-#define  PX_OBJECT_COORDINATEDATA_MAP_RIGHT 1
-#define  PX_OBJECT_COORDINATEDATA_MAP_HORIZONTAL 2
 
-#define  PX_OBJECT_COORDINATES_DEFAULE_MINHORIZONTALPIXELDIVIDING 48
-#define  PX_OBJECT_COORDINATES_DEFAULE_MINVERTICALPIXELDIVIDING	  20
-#define	 PX_OBJECT_COORDINATES_DEFAULE_DIVIDING					  10
-#define  PX_OBJECT_COORDINATES_DEFAULT_SPACER					  64
-#define  PX_OBJECT_COORDINATES_DEFAULT_VERTICALFLAG_OFFSET        8
-#define  PX_OBJECT_COORDINATES_DEFAULT_FLAGTEXT_SPACER		      8
-
-#define	 PX_OBJECT_COORDINATES_DEFAULT_FRAMELINE_WIDTH			  2
-#define  PX_OBJECT_COORDINATES_DEFAULT_FONT_SIZE				  16
-#define  PX_OBJECT_COORDINATES_DEFAULT_DASH_RGB					  255,100,100,255
-#define  PX_OBJECT_COORDINATES_DEFAULT_LINE_WIDTH				  2.0f
-
-
-#define  PX_OBJECT_COORDINATES_DEFAULT_FLOAT_FLAGFORMAT_H		 "%1.2"
-#define  PX_OBJECT_COORDINATES_DEFAULT_INT_FLAGFORMAT_H			 "%1"
-
-#define  PX_OBJECT_COORDINATES_DEFAULT_FLOAT_FLAGFORMAT_L		 "%1.2"
-#define  PX_OBJECT_COORDINATES_DEFAULT_INT_FLAGFORMAT_L			 "%1"
-
-#define  PX_OBJECT_COORDINATES_DEFAULT_FLOAT_FLAGFORMAT_R		 "%1.2"
-#define  PX_OBJECT_COORDINATES_DEFAULT_INT_FLAGFORMAT_R			 "%1"
 
 
 
@@ -196,32 +173,6 @@ typedef struct
 	px_color blendColor;
 }PX_Object_RoundCursor;
 
-typedef struct
-{
-	px_int x,y,width,height;
-	px_char u_key[8];
-	px_char d_key[8];
-	px_bool bCursor;
-	px_bool bDown;
-	px_bool bhold;
-}PX_Object_VirtualKey;
-
-
-
-typedef struct
-{
-	PX_Object_VirtualKey Keys[14+14+13+12+3];
-	px_color backgroundColor;
-	px_color borderColor;
-	px_color cursorColor;
-	px_color pushColor;
-	PX_Quadtree quadTree;
-	px_char functionCode;
-	px_bool bTab,bUpper,bShift,bCtrl,bAlt;
-}PX_Object_VirtualKeyBoard;
-
-
-
 
 
 typedef struct _PX_Object_Event
@@ -238,8 +189,35 @@ typedef struct _PX_Object_Event
 	};
 }PX_Object_Event;
 
+//////////////////////////////////////////////////////////////////////////
+//EVENT params
+px_float PX_Object_Event_GetCursorX(PX_Object_Event e);
+px_float PX_Object_Event_GetCursorY(PX_Object_Event e);
+px_float PX_Object_Event_GetCursorZ(PX_Object_Event e);
+px_int PX_Object_Event_GetCursorIndex(PX_Object_Event e);
 
+px_float PX_Object_Event_GetWidth(PX_Object_Event e);
+px_float PX_Object_Event_GetHeight(PX_Object_Event e);
 
+px_void PX_Object_Event_SetWidth(PX_Object_Event *e,px_float w);
+px_void PX_Object_Event_SetHeight(PX_Object_Event *e,px_float h);
+px_void PX_Object_Event_SetCursorX(PX_Object_Event *e,px_float x);
+px_void PX_Object_Event_SetCursorY(PX_Object_Event *e,px_float y);
+px_void PX_Object_Event_SetCursorZ(PX_Object_Event *e,px_float z);
+px_void PX_Object_Event_SetCursorIndex(PX_Object_Event *e,px_int index);
+
+px_float PX_Object_Event_GetScaleCursorX(PX_Object_Event e);
+px_float PX_Object_Event_GetScaleCursorY(PX_Object_Event e);
+px_float PX_Object_Event_GetScaleCursorZ(PX_Object_Event e);
+
+px_void PX_Object_Event_SetScaleCursorX(PX_Object_Event *e,px_float x);
+px_void PX_Object_Event_SetScaleCursorY(PX_Object_Event *e,px_float y);
+px_void PX_Object_Event_SetScaleCursorZ(PX_Object_Event *e,px_float z);
+
+px_uint PX_Object_Event_GetKeyDown(PX_Object_Event e);
+px_void PX_Object_Event_SetKeyDown(PX_Object_Event *e,px_uint key);
+px_char* PX_Object_Event_GetStringPtr(PX_Object_Event e);
+px_void PX_Object_Event_SetStringPtr(PX_Object_Event *e,px_void *ptr);
 struct _PX_Object_EventAction
 {
 	px_uint EventAction;
@@ -373,8 +351,8 @@ typedef struct
 	enum PX_OBJECT_SLIDERBAR_TYPE Type;
 	enum PX_OBJECT_SLIDERBAR_STYLE style;
 	enum PX_OBJECT_SLIDERBAR_STATUS status;
-	px_int btnDownX,btnDownY;
-	px_int DargButtonX,DargButtonY;
+	px_float btnDownX,btnDownY;
+	px_float DargButtonX,DargButtonY;
 	px_int Max;
 	px_int lastValue;
 	px_int Value;
@@ -387,6 +365,7 @@ PX_Object *PX_Object_SliderBarCreate(px_memorypool *mp,PX_Object *Parent,px_int 
 PX_Object_SliderBar *PX_Object_GetSliderBar(PX_Object *Object);
 px_void	   PX_Object_SliderBarSetValue(PX_Object *pSliderBar,px_int Value);
 px_void	   PX_Object_SliderBarSetMax(PX_Object *pSliderBar,px_int Max);
+px_int	   PX_Object_SliderBarGetMax( PX_Object *pSliderBar );
 px_int	   PX_Object_SliderBarGetValue(PX_Object *pSliderBar);
 px_void	   PX_Object_SliderBarRender(px_surface *psurface,PX_Object *pSliderBar,px_uint elpased);
 px_void    PX_Object_SliderBarSetBackgroundColor(PX_Object *pSliderBar,px_color color);
@@ -622,7 +601,29 @@ px_int PX_Object_ListAddItemDesc(PX_Object *pListObject,px_void *desc);
 px_void *PX_Object_ListGetItemDesc(PX_Object *pListObject,px_int index);
 px_void PX_Object_ListRemoveItemDesc(PX_Object *pListObject,px_int index);
 
+//////////////////////////////////////////////////////////////////////////
+//
+typedef struct
+{
+	px_int x,y,width,height;
+	px_char u_key[8];
+	px_char d_key[8];
+	px_bool bCursor;
+	px_bool bDown;
+	px_bool bhold;
+	
+}PX_Object_VirtualKey;
 
+typedef struct
+{
+	PX_Object_VirtualKey Keys[14+14+13+12+3];
+	px_color backgroundColor;
+	px_color borderColor;
+	px_color cursorColor;
+	px_color pushColor;
+	px_char functionCode;
+	px_bool bTab,bUpper,bShift,bCtrl,bAlt;
+}PX_Object_VirtualKeyBoard;
 
 PX_Object* PX_Object_VirtualKeyBoardCreate(px_memorypool *mp, PX_Object *Parent,px_int x,px_int y,px_int width,px_int height);
 px_void PX_Object_VirtualKeyBoardSetBackgroundColor( PX_Object *pObject,px_color Color );
@@ -630,6 +631,52 @@ px_void PX_Object_VirtualKeyBoardSetBorderColor( PX_Object *pObject,px_color Col
 px_void PX_Object_VirtualKeyBoardCursorColor( PX_Object *pObject,px_color Color );
 px_void PX_Object_VirtualKeyBoardPushColor( PX_Object *pObject,px_color Color );
 px_char PX_Object_VirtualKeyBoardGetCode(PX_Object *pObject);
+
+typedef struct
+{
+	PX_Object_VirtualKey Keys[17];
+	px_color backgroundColor;
+	px_color borderColor;
+	px_color cursorColor;
+	px_color pushColor;
+	px_char functionCode;
+}PX_Object_VirtualNumberKeyBoard;
+
+PX_Object* PX_Object_VirtualNumberKeyBoardCreate(px_memorypool *mp, PX_Object *Parent,px_int x,px_int y,px_int width,px_int height);
+px_void PX_Object_VirtualNumberKeyBoardSetBackgroundColor( PX_Object *pObject,px_color Color );
+px_void PX_Object_VirtualNumberKeyBoardSetBorderColor( PX_Object *pObject,px_color Color );
+px_void PX_Object_VirtualNumberKeyBoardCursorColor( PX_Object *pObject,px_color Color );
+px_void PX_Object_VirtualNumberKeyBoardPushColor( PX_Object *pObject,px_color Color );
+px_char PX_Object_VirtualNumberKeyBoardGetCode(PX_Object *pObject);
+
+//////////////////////////////////////////////////////////////////////////
+
+#define  PX_OBJECT_COORDINATEDATA_MAP_LEFT  0
+#define  PX_OBJECT_COORDINATEDATA_MAP_RIGHT 1
+#define  PX_OBJECT_COORDINATEDATA_MAP_HORIZONTAL 2
+
+#define  PX_OBJECT_COORDINATES_DEFAULE_MINHORIZONTALPIXELDIVIDING 48
+#define  PX_OBJECT_COORDINATES_DEFAULE_MINVERTICALPIXELDIVIDING	  20
+#define	 PX_OBJECT_COORDINATES_DEFAULE_DIVIDING					  10
+#define  PX_OBJECT_COORDINATES_DEFAULT_SPACER					  64
+#define  PX_OBJECT_COORDINATES_DEFAULT_VERTICALFLAG_OFFSET        8
+#define  PX_OBJECT_COORDINATES_DEFAULT_FLAGTEXT_SPACER		      8
+
+#define	 PX_OBJECT_COORDINATES_DEFAULT_FRAMELINE_WIDTH			  2
+#define  PX_OBJECT_COORDINATES_DEFAULT_FONT_SIZE				  16
+#define  PX_OBJECT_COORDINATES_DEFAULT_DASH_RGB					  255,100,100,255
+#define  PX_OBJECT_COORDINATES_DEFAULT_LINE_WIDTH				  2.0f
+
+#define  PX_OBJECT_COORDINATES_DEFAULT_EXPONENTIAL_FORMAT	     "%1.2e%2"
+#define  PX_OBJECT_COORDINATES_DEFAULT_FLOAT_FLAGFORMAT_H		 "%1.2"
+#define  PX_OBJECT_COORDINATES_DEFAULT_INT_FLAGFORMAT_H			 "%1"
+
+#define  PX_OBJECT_COORDINATES_DEFAULT_FLOAT_FLAGFORMAT_L		 "%1.2"
+#define  PX_OBJECT_COORDINATES_DEFAULT_INT_FLAGFORMAT_L			 "%1"
+
+#define  PX_OBJECT_COORDINATES_DEFAULT_FLOAT_FLAGFORMAT_R		 "%1.2"
+#define  PX_OBJECT_COORDINATES_DEFAULT_INT_FLAGFORMAT_R			 "%1"
+
 
 #define  PX_OBJECT_COORDINATEFLAGLINE_XSHOW						 1
 #define  PX_OBJECT_COORDINATEFLAGLINE_YLSHOW					 2
@@ -654,6 +701,12 @@ typedef enum
 	PX_OBJECT_COORDINATES_COORDINATEDATA_MAP_RIGHT,
 }PX_OBJECT_COORDINATES_COORDINATEDATA_MAP;
 
+typedef enum
+{
+	PX_OBJECT_COORDINATES_TEXT_DISPLAYMODE_NORMAL,
+	PX_OBJECT_COORDINATES_TEXT_DISPLAYMODE_EXPONENTRAL,
+}PX_OBJECT_COORDINATES_TEXT_DISPLAYMODE;
+
 
 typedef struct  
 {
@@ -667,9 +720,10 @@ typedef struct
 {
 	px_double *MapHorizontalArray;
 	px_double *MapVerticalArray;
+	px_double Normalization;
 	px_color  Color;
 	PX_OBJECT_COORDINATES_COORDINATEDATA_MAP Map;
-	px_int		linewidth;
+	px_int	  linewidth;
 	px_int    ID;
 	px_int	  Visibled;
 	px_int	  Size;
@@ -683,6 +737,7 @@ typedef struct
 	px_double HorizontalRangeMax;
 	px_double LeftVerticalRangeMin,LeftVerticalRangeMax;
 	px_double RightVerticalRangeMin,RightVerticalRangeMax;
+	PX_OBJECT_COORDINATES_TEXT_DISPLAYMODE leftTextDisplayMode,RightTextDisplayMode;
 
 	px_double ResHorizontalRangeMin;
 	px_double ResHorizontalRangeMax;
@@ -698,6 +753,7 @@ typedef struct
 
 	px_int LeftSpacer,RightSpacer,TopSpacer,BottomSpacer;
 
+	const px_char *Exponential_Format;
 	const px_char *FloatFlagFormat_H;
 	const px_char *IntFlagFormat_H;
 	const px_char *FloatFlagFormat_L;
@@ -719,7 +775,7 @@ typedef struct
 	px_bool bDataUpdatePainter;
 	px_bool ShowHelpLine;
 
-	px_bool LeftTitleShow,RightTitleShow,HorizontalShow;
+	px_bool LeftTextShow,RightTextShow,HorizontalTextShow;
 
 	px_color DashColor;
 	px_color FontColor;
@@ -738,6 +794,7 @@ typedef struct
 	px_vector  vFlagLine;
 
 	px_int  helpLineX,helpLineY;
+	PX_FontModule *fontmodule;
 }PX_Object_Coordinates;
 
 
@@ -757,12 +814,13 @@ px_void PX_Object_CoordinatesShowHelpLine(PX_Object *pObject,px_bool show);
 px_void PX_Object_CoordinatesSetDataLineWidth(PX_Object *pObject,px_float linewidth );
 px_void PX_Object_CoordinatesSetDataShow(PX_Object *pObject,px_int index,px_bool show );
 px_void PX_Object_CoordinatesSetGuidesLineWidth(PX_Object *pObject,px_float linewidth);
+px_void PX_Object_CoordinatesSetGuidesLineColor(PX_Object *pObject,px_color clr);
 px_void PX_Object_CoordinatesSetTitleFontSize(PX_Object *pObject,int size);
 px_void PX_Object_CoordinatesSetTitleFontColor(PX_Object *pObject,px_color clr);
 px_void PX_Object_CoordinatesSetDashLineColor(PX_Object *pObject,px_color clr);
-px_void PX_Object_CoordinatesSetTitleLeftShow(PX_Object *pObject,px_bool bshow);
-px_void PX_Object_CoordinatesSetTitleRightShow(PX_Object *pObject,px_bool bshow);
-px_void PX_Object_CoordinatesSetHorizontalShow(PX_Object *pObject,px_bool bshow);
+px_void PX_Object_CoordinatesSetLeftTextShow(PX_Object *pObject,px_bool bshow);
+px_void PX_Object_CoordinatesSetRightTextShow(PX_Object *pObject,px_bool bshow);
+px_void PX_Object_CoordinatesSetHorizontalTextShow(PX_Object *pObject,px_bool bshow);
 px_void PX_Object_CoordinatesSetFloatFlagFormatHorizontal(PX_Object *pObject,const char *fmt);
 px_void PX_Object_CoordinatesSetIntFlagFormatHorizontal(PX_Object *pObject,const char *fmt);
 px_void PX_Object_CoordinatesSetFloatFlagFormatVerticalLeft(PX_Object *pObject,const char *fmt);
@@ -771,7 +829,8 @@ px_void PX_Object_CoordinatesSetFloatFlagFormatVerticalRight(PX_Object *pObject,
 px_void PX_Object_CoordinatesSetIntFlagFormatVericalRight(PX_Object *pObject,const char *fmt);
 
 
-
+px_void PX_Object_CoordinatesSetLeftTextMode(PX_Object *pObject,PX_OBJECT_COORDINATES_TEXT_DISPLAYMODE mode);
+px_void PX_Object_CoordinatesSetRightTextMode(PX_Object *pObject,PX_OBJECT_COORDINATES_TEXT_DISPLAYMODE mode);
 px_void PX_Object_CoordinatesSetHorizontalMin(PX_Object *pObject,double Min);
 px_void PX_Object_CoordinatesSetHorizontalMax(PX_Object *pObject,double Max);
 px_void PX_Object_CoordinatesSetLeftVerticalMin(PX_Object *pObject,double Min);
@@ -796,9 +855,9 @@ px_void PX_Object_CoordinatesClearFlagLine(PX_Object *pObject);
 px_void PX_Object_CoordinatesAddData(PX_Object *pObject,PX_Object_CoordinateData data);
 px_void PX_Object_CoordinatesAddCoordinateFlagLine(PX_Object *pObject,PX_Object_CoordinateFlagLine Line);
 // 
-px_void PX_Object_CoordinatesSetMargin(PX_Object_Coordinates *pcd,int Left,int Right,int Top,int Bottom);
+px_void PX_Object_CoordinatesSetMargin(PX_Object *pObject,px_int Left,px_int Right,px_int Top,px_int Bottom);
 px_void PX_Object_CoordinatesRestoreCoordinates(PX_Object *pObject);
-PX_Object *PX_Object_CoordinatesCreate(px_memorypool *mp, PX_Object *Parent,px_int x,px_int y,px_int Width,px_int Height);
+PX_Object *PX_Object_CoordinatesCreate(px_memorypool *mp, PX_Object *Parent,px_int x,px_int y,px_int Width,px_int Height,PX_FontModule *fontmodule);
 
 
 #define PX_OBJECT_FILTER_EDITOR_MAX_PT 256
@@ -884,17 +943,20 @@ typedef struct
 	px_color PushColor;
 	px_char Text[PX_OBJECT_CHECKBOX_MAX_CONTENT];
 	px_bool bCheck;
+	PX_FontModule *fm;
 	PX_Object_CHECKBOX_STATE state;
 }PX_Object_CheckBox;
 
 PX_Object_CheckBox *PX_Object_GetCheckBox(PX_Object *Object);
-PX_Object * PX_Object_CheckBoxCreate(px_memorypool *mp, PX_Object *Parent,px_int x,px_int y,px_int Width,px_int Height,const char text[]);
+PX_Object * PX_Object_CheckBoxCreate(px_memorypool *mp, PX_Object *Parent,px_int x,px_int y,px_int Width,px_int Height,const char text[],PX_FontModule *fm);
 px_bool PX_Object_CheckBoxGetCheck(PX_Object *Object);
 px_void PX_Object_CheckBoxSetBackgroundColor(PX_Object *Object,px_color clr);
 px_void PX_Object_CheckBoxSetBorderColor(PX_Object *Object,px_color clr);
 px_void PX_Object_CheckBoxSetPushColor(PX_Object *Object,px_color clr);
 px_void PX_Object_CheckBoxSetCursorColor(PX_Object *Object,px_color clr);
+px_void PX_Object_CheckBoxSetText(PX_Object *Object,const px_char text[]);
 px_void PX_Object_CheckBoxSetTextColor(PX_Object *Object,px_color clr);
+px_void PX_Object_CheckBoxSetCheck(PX_Object *Object,px_bool check);
 
 
 

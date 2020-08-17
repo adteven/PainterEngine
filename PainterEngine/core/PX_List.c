@@ -85,6 +85,12 @@ px_bool PX_ListPop(px_list *list,px_list_node *node)
 	return PX_TRUE;
 }
 
+
+px_bool PX_ListErase(px_list *list,px_int i)
+{
+	 return PX_ListPop(list,PX_ListAt(list,i));
+}
+
 px_list_node* PX_ListAt(px_list *list,px_int index)
 {
 	px_list_node *node=list->head;

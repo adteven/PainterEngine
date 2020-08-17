@@ -17,4 +17,5 @@ px_void PX_SurfaceDrawPixelFaster(px_surface *psurface,px_int X,px_int Y,px_colo
 px_bool PX_SurfaceCreate(px_memorypool *mp,px_uint width,px_uint height,_OUT px_surface *surface);
 px_void PX_SurfaceClear(px_surface *ps, px_int left, px_int top, px_int right, px_int bottom,px_color color);
 px_void PX_SurfaceFree(px_surface *psurface);
+px_int PX_SurfaceMemorySize(px_uint width,px_uint height);
 #endif

@@ -790,6 +790,12 @@ px_bool PX_ScriptAsmScan(PX_SCRIPT_ASM_COMPILER *compiler)
 		pLexeme=compiler->lexer.CurLexeme.buffer;
 		switch(type)
 		{
+			case PX_LEXER_LEXEME_TYPE_CONATINER:
+			case PX_LEXER_LEXEME_TYPE_DELIMITER:
+			case PX_LEXER_LEXEME_TYPE_ERR:
+			case PX_LEXER_LEXEME_TYPE_END:
+				goto _ERROR;
+				break;
 		case PX_LEXER_LEXEME_TYPE_SPACER:
 		case PX_LEXER_LEXEME_TYPE_NEWLINE:
 			continue;
@@ -1143,6 +1149,12 @@ px_bool PX_ScriptAsmCc(PX_SCRIPT_ASM_COMPILER *compiler)
 		pLexeme=compiler->lexer.CurLexeme.buffer;
 		switch(type)
 		{
+			case PX_LEXER_LEXEME_TYPE_CONATINER:
+			case PX_LEXER_LEXEME_TYPE_DELIMITER:
+			case PX_LEXER_LEXEME_TYPE_ERR:
+			case PX_LEXER_LEXEME_TYPE_END:
+				goto _ERROR;
+				break;
 		case PX_LEXER_LEXEME_TYPE_SPACER:
 		case PX_LEXER_LEXEME_TYPE_NEWLINE:
 			continue;
